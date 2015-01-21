@@ -40,19 +40,9 @@ module FissionApp
       def fission_navigation(product, user)
         {
           'Nellie' => {
-            'Dashboard' => Rails.application.routes.url_for(
-              :controller => 'nellie/dashboard',
-              :action => :index,
-              :only_path => true
-            ),
-            'Repositories' => Rails.application.routes.url_for(
-              :controller => 'repositories',
-              :namespace => product.internal_name,
-              :account_id => user.run_state.current_account.id,
-              :action => :list,
-              :only_path => true
-            ),
-            'Jobs' => '/nellie/jobs'
+            'Dashboard' => Rails.application.routes.url_helpers.nellie_dashboard_path,
+            'Repositories' => Rails.application.routes.url_helpers.nellie_repositories_path,
+            'Jobs' => Rails.application.routes.url_helpers.nellie_jobs_path
           }.with_indifferent_access
         }.with_indifferent_access
       end
