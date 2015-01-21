@@ -1,0 +1,47 @@
+%div#fission-job.container.container-padding
+  %div.panel{:class => "panel-#{@state}"}
+    %div.panel-heading
+      %h3
+        Nellie Job:
+        = @job.message_id
+    %div.panel-body
+      %table.table.table-hover
+        %tr
+          %td
+            %b
+              Timestamp
+          %td= @job.created_at.strftime('%Y/%m/%d %H:%M:%S')
+        %tr
+          %td
+            %b
+              Status
+          %td{:class => "text-#{@state}"}
+            %b= @job.status.to_s.humanize
+        - if @job.status == :error
+          %tr
+            %td.text-danger
+              %b Error Message
+            %td= @job.payload.get(:error, :reason)
+        %tr
+          %td
+            %b
+              Completed
+          %td= "#{@job.percent_complete}%"
+      - if @files[:stdout]
+        %div.panel.panel-success
+          %div.panel-heading
+            %h4.panel-title
+              %a.accordion-toggle{'data-toggle' => 'collapse', :href => '#stdout-display'}
+                %b [STDOUT]
+          %div.panel-collapse.collapse#stdout-display
+            %div.panel-body
+              %pre#job-stdout~ @files[:stdout]
+      - if @files[:stderr]
+        %div.panel.panel-danger
+          %div.panel-heading
+            %h4.panel-title
+              %a.accordion-toggle{'data-toggle' => 'collapse', :href => '#stderr-display'}
+                %b [STDERR]
+          %div.panel-collapse.collapse#stderr-display
+            %div.panel-body
+              %pre#job-stderr~ @files[:stderr]
