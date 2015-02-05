@@ -1,0 +1,18 @@
+%div.nellie-dashboard
+  %div.container.container-padding
+    %div.panel.panel-default
+      %div.panel-heading
+        Nellie Dashboard
+      %div.panel-body#nellie-dashboard
+        - @data.each do |acct, repos|
+          %table.table.table-hover
+            %thead
+              %tr
+                %th= acct.name
+                %th Completed successfully
+                %th Log data
+            - repos.each do |repo, last_job|
+              %tr
+                %td= link_to(repo.name, nellie_repository_path(repo.id))
+                %td= last_job[:completed]
+                %td= last_job[:logs]

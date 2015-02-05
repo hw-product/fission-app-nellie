@@ -7,21 +7,32 @@ class Nellie::DashboardController < ApplicationController
         javascript_redirect_to dashboard_path
       end
       format.html do
-        @dataset = Job.dataset_with(
+        @product = Product.find_by_internal_name('nellie')
+        @accounts = [@account]
+
+        nellie_dataset = Job.dataset_with(
           :scalars => {
-            :repository_name => [:data, :github, :repository, :full_name],
-            :status => [:status]
+            :status => ['status']
           }
-        ).where(:account_id => @account.id)
-        @data = Smash[
-          @product.repositories_dataset.where(:account_id => @account.id).all.map do |repo|
+        ).where(
+          :id => Job.current_dataset_ids,
+          :account_id => current_user.run_state.current_account.id
+        ).where{
+          created_at > 7.days.ago
+        }
+        @data = Hash[
+          @accounts.map do |acct|
             [
-              repo.name,
-              Smash.new(
-                :complete => @dataset.where(:repository_name => repo.name, :status => 'complete'),
-                :error => @dataset.where(:repository_name => repo.name, :status => 'error'),
-                :in_progress => @dataset.where(:repository_name => repo.name, :status => 'in_progress')
-              )
+              acct,
+              Hash[
+                @product.repositories_dataset.where(:account_id => acct.id).all.map do |repo|
+                  [repo, Smash.new(
+                     :completed => nellie_dataset.last.payload[:data][:nellie][:result][:complete],
+                     :logs => nellie_dataset.last.payload[:data][:nellie][:result][:logs]
+                   )
+                  ]
+                end
+              ]
             ]
           end
         ]
