@@ -13,6 +13,6 @@
                 %th Log data
             - repos.each do |repo, last_job|
               %tr
-                %td= link_to(repo.name, nellie_repository_path(repo.id))
+                %td= repo.name
                 %td= last_job[:completed]
                 %td= last_job[:logs]
