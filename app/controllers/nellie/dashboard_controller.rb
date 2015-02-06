@@ -12,7 +12,8 @@ class Nellie::DashboardController < ApplicationController
 
         nellie_dataset = Job.dataset_with(
           :scalars => {
-            :status => ['status']
+            :status => ['status'],
+            :repository_name => [:data, :github, :repository, :full_name]
           }
         ).where(
           :id => Job.current_dataset_ids,
@@ -26,11 +27,14 @@ class Nellie::DashboardController < ApplicationController
               acct,
               Hash[
                 @product.repositories_dataset.where(:account_id => acct.id).all.map do |repo|
-                  [repo, Smash.new(
-                     :completed => nellie_dataset.last.payload[:data][:nellie][:result][:complete],
-                     :logs => nellie_dataset.last.payload[:data][:nellie][:result][:logs]
-                   )
-                  ]
+                  repo_data = nellie_dataset.where(:repository_name => repo.name).last
+                  if repo_data
+                    [repo, Smash.new(
+                       :completed => repo_data.payload[:data][:nellie][:result][:complete],
+                       :logs => repo_data.payload[:data][:nellie][:result][:logs]
+                     )
+                    ]
+                  end
                 end
               ]
             ]
