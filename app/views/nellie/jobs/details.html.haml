@@ -21,27 +21,18 @@
           %tr
             %td.text-danger
               %b Error Message
-            %td= @job.payload.get(:error, :reason)
+            %td= @job.payload.fetch(:error, :reason, 'No reason available')
         %tr
           %td
             %b
               Completed
           %td= "#{@job.percent_complete}%"
-      - if @files[:stdout]
-        %div.panel.panel-success
+      - @files.each do |k,v|
+        %div.panel{:class => k.include?('stderr') ? 'panel-danger' : 'panel-success'}
           %div.panel-heading
             %h4.panel-title
-              %a.accordion-toggle{'data-toggle' => 'collapse', :href => '#stdout-display'}
-                %b [STDOUT]
-          %div.panel-collapse.collapse#stdout-display
+              %a.accordion-toggle{'data-toggle' => 'collapse', :href => "##{k.gsub(/[^A-Za-z0-9]/, '')}-display"}
+                %b=k
+          %div.panel-collapse.collapse{:id => "#{k.gsub(/[^A-Za-z0-9]/, '')}-display"}
             %div.panel-body
-              %pre#job-stdout~ @files[:stdout]
-      - if @files[:stderr]
-        %div.panel.panel-danger
-          %div.panel-heading
-            %h4.panel-title
-              %a.accordion-toggle{'data-toggle' => 'collapse', :href => '#stderr-display'}
-                %b [STDERR]
-          %div.panel-collapse.collapse#stderr-display
-            %div.panel-body
-              %pre#job-stderr~ @files[:stderr]
+              %pre{:id => "##{k.gsub(/[^A-Za-z0-9]/, '')}-display"}~ v
