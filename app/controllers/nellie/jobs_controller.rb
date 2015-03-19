@@ -44,6 +44,9 @@ class Nellie::JobsController < JobsController
               end
             end
           end
+          if(log_key = @job.payload.get(:data, :nellie, :result, :log))
+            @files["Log"] = Rails.application.config.fission_assets.get(log_key)
+          end
         else
           flash[:error] = "Failed to locate requested job (ID: #{params[:job_id]})"
           redirect_to dashboard_path
