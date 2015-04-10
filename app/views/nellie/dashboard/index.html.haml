@@ -1,18 +1,20 @@
-%div.nellie-dashboard
-  %div.container.container-padding
-    %div.panel.panel-default
-      %div.panel-heading
-        Nellie Dashboard
-      %div.panel-body#nellie-dashboard
-        - @data.each do |acct, repos|
-          %table.table.table-hover
-            %thead
-              %tr
-                %th= acct.name
-                %th Completed successfully
-                %th Log data
-            - repos.each do |repo, last_job|
-              %tr
-                %td= repo.name
-                %td= last_job[:completed]
-                %td= last_job[:logs]
+- id = 'nellie'
+
+:ruby
+  content_for(:container) do
+    render(
+      :partial => 'layouts/panel',
+      :locals => {
+        :id => id,
+        :heading => 'Nellie Dashboard',
+        :panel_content => @data.map{ |acct, repos|
+          header_data = [acct.name, "Completed successfully", "Log data"]
+          data = repos.map { |repo, v| [repo.name, v[:completed], v[:logs]] }
+
+          render(:partial => 'layouts/table', :locals => { :header_data => header_data, :data => data })
+        }.join.html_safe
+      }
+    )
+  end
+
+= render(:partial => 'layouts/container', :locals => { :container_class => "#{id}-dashboard", :container_id => id })
