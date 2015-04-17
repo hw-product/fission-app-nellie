@@ -32,15 +32,14 @@ class Nellie::JobsController < JobsController
           @files = Smash.new.tap do |files|
             @job.payload.fetch(:data, :nellie, :history, []).each_with_index do |item, i|
               item.fetch(:logs, {}).each do |k,v|
-                begin
-                  file = Rails.application.config.fission_assets.get(v)
-                rescue
-                  raise
-                end
-                if(file)
-                  key = "#{k} <command #{i+1}>"
-                  files[key] = file.read
-                end
+                file = begin
+                         Rails.application.config.fission_assets.get(v)
+                       rescue Jackal::Assets::Error::NotFound
+                         nil
+                       end
+
+                key = "#{k} <command #{i+1}>"
+                files[key] = file ? file.read : "FILE NOT FOUND!"
               end
             end
           end

@@ -1,38 +1,55 @@
-%div#fission-job.container.container-padding
-  %div.panel{:class => "panel-#{@state}"}
-    %div.panel-heading
-      %h3
-        Nellie Job:
-        = @job.message_id
-    %div.panel-body
-      %table.table.table-hover
-        %tr
-          %td
-            %b
-              Timestamp
-          %td= @job.created_at.strftime('%Y/%m/%d %H:%M:%S')
-        %tr
-          %td
-            %b
-              Status
-          %td{:class => "text-#{@state}"}
-            %b= @job.status.to_s.humanize
-        - if @job.status == :error
-          %tr
-            %td.text-danger
-              %b Error Message
-            %td= @job.payload.fetch(:error, :reason, 'No reason available')
-        %tr
-          %td
-            %b
-              Completed
-          %td= "#{@job.percent_complete}%"
-      - @files.each do |k,v|
-        %div.panel{:class => k.include?('stderr') ? 'panel-danger' : 'panel-success'}
-          %div.panel-heading
-            %h4.panel-title
-              %a.accordion-toggle{'data-toggle' => 'collapse', :href => "##{k.gsub(/[^A-Za-z0-9]/, '')}-display"}
-                %b=k
-          %div.panel-collapse.collapse{:id => "#{k.gsub(/[^A-Za-z0-9]/, '')}-display"}
-            %div.panel-body
-              %pre{:id => "##{k.gsub(/[^A-Za-z0-9]/, '')}-display"}~ v
+- content_for(:panel_body) do
+  %table.table.table-hover
+    %tr
+      %td
+        %b
+          Timestamp
+      %td= @job.created_at.strftime('%Y/%m/%d %H:%M:%S')
+    %tr
+      %td
+        %b
+          Status
+      %td{:class => "text-#{@state}"}
+        %b= @job.status.to_s.humanize
+    - if @job.status == :error
+      %tr
+        %td.text-danger
+          %b Error Message
+        %td= @job.payload.fetch(:error, :reason, 'No reason available')
+    %tr
+      %td
+        %b
+          Completed
+      %td= "#{@job.percent_complete}%"
+  - @files.each do |k,v|
+    - panel_class = k.include?('stderr') ? 'panel-danger' : 'panel-success'
+    - key = k.gsub(/[^A-Za-z0-9]/, '')
+    - content_for("panel_header_#{key}") do
+      %h4.panel-title
+        %a.accordion-toggle{'data-toggle' => 'collapse', :href => "##{key}-display"}
+          %b=k
+    - content_for("panel_body_#{key}") do
+      %div.panel-collapse.collapse{:id => "#{key}-display"}
+        %pre{:id => "##{key}-display"}~ v
+
+    = render(:partial => 'layouts/panel',                      |
+             :locals => {                                      |
+               :heading => content_for("panel_header_#{key}"), |
+               :panel_class => panel_class,                    |
+               :panel_content => content_for("panel_body_#{key}") })
+
+- content_for(:panel_heading) do
+  %h3
+    Nellie Job:
+    = @job.message_id
+
+- content_for(:container) do
+  = render(:partial => 'layouts/panel',                   |
+           :locals => {                                   |
+             :heading => content_for(:panel_heading),     |
+             :panel_class => "panel-#{@state}",           |
+             :panel_content => content_for(:panel_body)})
+
+= render(:partial => 'layouts/container',                            |
+         :locals => { :container_content => content_for(:container), |
+                      :container_id => 'fission-job' })
